@@ -161,8 +161,40 @@ Paste JSON here:<p/><textarea name=json cols=80 rows=24></textarea>
                 # TO STEP STUDENTS:
                 # You'll probably want to change how this works, to do something
                 # more clever than just picking a random move.
-	    	move = random.choice(valid_moves)
+	    	move = getBestMoves(board, 6)[1]
     		self.response.write(PrettyMove(move))
+
+		def getBestMoves(board, depth):
+    recordMoves = None
+    fixedDepth = depth - 1
+    if depth < 1:
+        return board.Count(1) - board.Count(2)
+    playerNumber = valid_moves[0]["As"]
+    best = board.Worstscore(playerNumber)
+    for moves in valid_moves:
+        nextBoard = board.NextBoardPosition(moves)
+        (score, recordMoves) = nextBoard.getBestMoves(depth-1))
+        if moves["As"] == 1:
+            if score > best:
+                recordMoves = moves
+        elif moves["As"] == 2:
+            if score < best:
+                recordMoves = moves
+    return best, recordMoves
+
+
+def WorstScore(self, playerNumber):
+    if playerNumber == 1:
+        return -100
+    else:
+        return 100
+
+
+def CountBlackOrWhite(self, colorNumber):
+    counter = 0
+    for placeList in board["board"]["Pieces"]:
+        counter += placeList.count(colorNumber)
+    return counter
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler)
