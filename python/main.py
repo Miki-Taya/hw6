@@ -125,76 +125,82 @@ def PrettyMove(move):
 	return '%s%d' % (chr(ord('A') + m[0] - 1), m[1])
 
 class MainHandler(webapp2.RequestHandler):
-    # Handling GET request, just for debugging purposes.
-    # If you open this handler directly, it will show you the
-    # HTML form here and let you copy-paste some game's JSON
-    # here for testing.
-    def get(self):
-        if not self.request.get('json'):
-          self.response.write("""
+	# Handling GET request, just for debugging purposes.
+	# If you open this handler directly, it will show you the
+	# HTML form here and let you copy-paste some game's JSON
+	# here for testing.
+	def get(self):
+		if not self.request.get('json'):
+			self.response.write("""
 <body><form method=get>
 Paste JSON here:<p/><textarea name=json cols=80 rows=24></textarea>
 <p/><input type=submit>
 </form>
 </body>
 """)
-          return
-        else:
-          g = Game(self.request.get('json'))
-          self.pickMove(g)
+			return
+		else:
+			g = Game(self.request.get('json'))
+			self.pickMove(g)
 
-    def post(self):
-    	# Reads JSON representation of the board and store as the object.
-    	g = Game(self.request.body)
-        # Do the picking of a move and print the result.
-        self.pickMove(g)
+	def post(self):
+		# Reads JSON representation of the board and store as the object.
+		g = Game(self.request.body)
+		# Do the picking of a move and print the result.
+		self.pickMove(g)
 
+	def foo(self):
+		logging.info("test")
 
-    def pickMove(self, g):
-    	# Gets all valid moves.
-    	valid_moves = g.ValidMoves()
-    	if len(valid_moves) == 0:
-    		# Passes if no valid moves.
-    		self.response.write("PASS")
-    	else:
-    		# Chooses a valid move randomly if available.
-                # TO STEP STUDENTS:
-                # You'll probably want to change how this works, to do something
-                # more clever than just picking a random move.
-	    	move = getBestMoves(board, 6)[1]
-    		self.response.write(PrettyMove(move))
+	def WorstScore(self, playerNumber):
+		if playerNumber == 1:
+			return -100
+		elif playerNumber == 2:
+			return 100
 
-		def getBestMoves(board, depth):
-    recordMoves = None
-    fixedDepth = depth - 1
-    if depth < 1:
-        return board.Count(1) - board.Count(2)
-    playerNumber = valid_moves[0]["As"]
-    best = board.Worstscore(playerNumber)
-    for moves in valid_moves:
-        nextBoard = board.NextBoardPosition(moves)
-        (score, recordMoves) = nextBoard.getBestMoves(depth-1))
-        if moves["As"] == 1:
-            if score > best:
-                recordMoves = moves
-        elif moves["As"] == 2:
-            if score < best:
-                recordMoves = moves
-    return best, recordMoves
+	def CountBlackOrWhite(self, g, colorNumber):
+		counter = 0
+		for placeList in g._board["Pieces"]:
+			counter += placeList.count(colorNumber)
+		return counter
 
-
-def WorstScore(self, playerNumber):
-    if playerNumber == 1:
-        return -100
-    else:
-        return 100
+	def getBestMove(self, g, depth):
+		valid_moves = g.ValidMoves()
+		if depth < 1:
+			recordMove = None
+			return self.CountBlackOrWhite(g, 1) - self.CountBlackOrWhite(g, 2), recordMove
+		playerNumber = valid_moves[0]["As"]
+		best = self.WorstScore(playerNumber)
+		for move in valid_moves:
+			next_g = g.NextBoardPosition(move)
+			(score, recordMove) = self.getBestMove(next_g, depth-1)
+			if move["As"] == 1:
+				if score > best:
+					best = score
+					recordMove = move
+			elif move["As"] == 2:
+				if score < best:
+					best = score
+					recordMove = move
+		return best, recordMove
 
 
-def CountBlackOrWhite(self, colorNumber):
-    counter = 0
-    for placeList in board["board"]["Pieces"]:
-        counter += placeList.count(colorNumber)
-    return counter
+
+	def pickMove(self, g):
+		# Gets all valid moves.
+		valid_moves = g.ValidMoves()
+		logging.info("self = %s", self)
+		if len(valid_moves) == 0:
+			# Passes if no valid moves.
+			self.response.write("PASS")
+		else:
+			self.foo()
+		 	r = self.getBestMove(g, 4)
+			move = r[1]
+			self.response.write(PrettyMove(move))
+
+
+
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler)
