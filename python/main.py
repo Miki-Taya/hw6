@@ -168,20 +168,25 @@ Paste JSON here:<p/><textarea name=json cols=80 rows=24></textarea>
 		valid_moves = g.ValidMoves()
 		if depth < 1:
 			recordMove = None
-			return self.CountBlackOrWhite(g, 1) - self.CountBlackOrWhite(g, 2), recordMove
+			score = self.CountBlackOrWhite(g, 1) - self.CountBlackOrWhite(g, 2)
+			return score, recordMove
 		playerNumber = valid_moves[0]["As"]
 		best = self.WorstScore(playerNumber)
 		for move in valid_moves:
 			next_g = g.NextBoardPosition(move)
-			(score, recordMove) = self.getBestMove(next_g, depth-1)
-			if move["As"] == 1:
-				if score > best:
-					best = score
-					recordMove = move
-			elif move["As"] == 2:
-				if score < best:
-					best = score
-					recordMove = move
+			if len(next_g.ValidMoves()) == 0:
+				score = self.CountBlackOrWhite(g, 1) - self.CountBlackOrWhite(g, 2)
+				(score, recordMove) = (score, move)
+			else:
+				(score, hogehoge) = self.getBestMove(next_g, depth-1)
+				if move["As"] == 1:
+					if score > best:
+						best = score
+						recordMove = move
+				elif move["As"] == 2:
+					if score < best:
+						best = score
+						recordMove = move
 		return best, recordMove
 
 
@@ -195,8 +200,8 @@ Paste JSON here:<p/><textarea name=json cols=80 rows=24></textarea>
 			self.response.write("PASS")
 		else:
 			self.foo()
-		 	r = self.getBestMove(g, 4)
-			move = r[1]
+		 	best, move = self.getBestMove(g, 4)
+			logging.info('%s' % move)
 			self.response.write(PrettyMove(move))
 
 
