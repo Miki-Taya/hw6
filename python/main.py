@@ -167,16 +167,16 @@ Paste JSON here:<p/><textarea name=json cols=80 rows=24></textarea>
 	def getBestMove(self, g, depth):
 		valid_moves = g.ValidMoves()
 		if depth < 1:
-			recordMove = None
 			score = self.CountBlackOrWhite(g, 1) - self.CountBlackOrWhite(g, 2)
-			return score, recordMove
+			return score, None
 		playerNumber = valid_moves[0]["As"]
 		best = self.WorstScore(playerNumber)
+		recordMove = None
 		for move in valid_moves:
 			next_g = g.NextBoardPosition(move)
 			if len(next_g.ValidMoves()) == 0:
 				score = self.CountBlackOrWhite(g, 1) - self.CountBlackOrWhite(g, 2)
-				(score, recordMove) = (score, move)
+				(best, recordMove) = (score, move)
 			else:
 				(score, hogehoge) = self.getBestMove(next_g, depth-1)
 				if move["As"] == 1:
